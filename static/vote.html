@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Voting DAPP</title>
+    <script defer src="main.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js" type="application/javascript"></script>
+
+    <style>
+        /* Noisy Gradient Background */
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-image: url('https://images.unsplash.com/photo-1639322537228-f710d846310a?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8YmxvY2tjaGFpbnxlbnwwfHwwfHx8MA%3D%3D');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            color: white;
+            position: relative;
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://www.transparenttextures.com/patterns/asfalt-light.png');
+            opacity: 0.1;
+            z-index: 0;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        /* Navigation Bar */
+        .navbar {
+            overflow: hidden;
+            background-color: rgba(0, 0, 0, 0.5);
+            font-family: Arial, sans-serif;
+            padding: 0 20px;
+            z-index: 1;
+            position: relative;
+        }
+
+        .navbar a {
+            float: left;
+            display: block;
+            color: white;
+            text-align: center;
+            padding: 16px 20px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .navbar a:hover {
+            background-color: #ddd;
+            color: black;
+        }
+
+        /* Card Container */
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            padding: 30px;
+            margin: 50px auto;
+            width: 90%;
+            max-width: 600px;
+            text-align: center;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            z-index: 1;
+            position: relative;
+        }
+
+        .card h1 {
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+
+        .card input[type="number"],
+        .card input[type="text"] {
+            width: 80%;
+            padding: 12px;
+            margin: 10px auto;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .card button,
+        input[type=submit] {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            margin: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .card button:hover,
+        input[type=submit]:hover {
+            background-color: #3e8e41;
+        }
+
+        /* Typography */
+        p, span {
+            font-size: 18px;
+            margin: 10px 0;
+        }
+
+        #myTable {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 30px;
+        }
+
+        #myTable th,
+        #myTable td {
+            border: 1px solid white;
+            padding: 10px;
+            text-align: center;
+            color: wheat;
+        }
+
+        #myTable th {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <a href="/vote.html">Vote</a>
+        <a href="/ListVoters.html">List Voters</a>
+    </div>
+
+    <div class="card">
+        <h1>Welcome to the Decentralized Voting Application</h1>
+
+        <button onclick="connectMetamask()">Connect Metamask</button>
+        <p id="metamasknotification"></p>
+
+        <hr style="margin: 30px 0; border: 1px solid rgba(255, 255, 255, 0.3);">
+
+        <span>Vote</span>
+        <input type="number" id="vote" placeholder="Enter candidate index...">
+        <button onclick="addVote()">Add Vote</button>
+        <p id="cand"></p>
+
+        <button onclick="voteStatus()">Check Voting Status</button>
+        <p id="status"></p>
+        <p id="time"></p>
+    </div>
+
+</body>
+</html>

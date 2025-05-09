@@ -39,10 +39,13 @@ const signer = new ethers.Wallet(PRIVATE_KEY, provider);
 const contractInstance = new ethers.Contract(CONTRACT_ADDRESS, abi, signer);
 
 // Routes
+
 app.get(['/', '/index.html'], (req, res) => {
     res.sendFile(path.join(__dirname, 'static', 'index.html'));
 });
-
+app.get('/votepage', (req, res) => {
+    res.sendFile(path.join(__dirname, 'static', 'vote.html'));
+});
 
 app.post('/vote', async (req, res) => {
     const vote = req.body.vote;
