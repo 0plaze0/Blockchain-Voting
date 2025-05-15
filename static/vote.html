@@ -5,142 +5,350 @@
     <title>Voting DAPP</title>
     <script defer src="main.js"></script>
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js" type="application/javascript"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
-        /* Noisy Gradient Background */
+        :root {
+            --primary-color: #3b82f6;
+            --secondary-color: #1e40af;
+            --accent-color: #60a5fa;
+            --text-color: #ffffff;
+            --card-bg: rgba(255, 255, 255, 0.1);
+            --card-border: rgba(255, 255, 255, 0.2);
+            --background-overlay: rgba(0, 0, 0, 0.7);
+            --transition-duration: 0.3s;
+        }
+
+        [data-theme="light"] {
+            --primary-color: #0D9488;
+            --secondary-color: #0F766E;
+            --accent-color: #14B8A6;
+            --text-color: #134E4A;
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --card-border: rgba(13, 148, 136, 0.2);
+            --background-overlay: rgba(255, 255, 255, 0.85);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+            transition: background-color var(--transition-duration) ease,
+                        color var(--transition-duration) ease,
+                        border-color var(--transition-duration) ease,
+                        box-shadow var(--transition-duration) ease;
+        }
+
         body {
             margin: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-image: url('https://images.unsplash.com/photo-1639322537228-f710d846310a?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8YmxvY2tjaGFpbnxlbnwwfHwwfHx8MA%3D%3D');
+            background-image: linear-gradient(var(--background-overlay), var(--background-overlay)),
+                            url('https://images.unsplash.com/photo-1639322537228-f710d846310a?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8YmxvY2tjaGFpbnxlbnwwfHwwfHx8MA%3D%3D');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
             background-attachment: fixed;
-            color: white;
-            position: relative;
+            color: var(--text-color);
             min-height: 100vh;
+            line-height: 1.6;
+            transition: background-image var(--transition-duration) ease;
         }
 
-        body::before {
-            content: "";
+        .navbar {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
             position: fixed;
+            width: 100%;
             top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-bottom: 1px solid var(--card-border);
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+        }
+
+        .navbar::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
             left: 0;
             width: 100%;
-            height: 100%;
-            background-image: url('https://www.transparenttextures.com/patterns/asfalt-light.png');
-            opacity: 0.1;
-            z-index: 0;
+            height: 1px;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                var(--primary-color),
+                transparent
+            );
+            animation: scanline 2s linear infinite;
         }
 
-        * {
-            box-sizing: border-box;
-        }
-
-        /* Navigation Bar */
-        .navbar {
-            overflow: hidden;
-            background-color: rgba(0, 0, 0, 0.5);
-            font-family: Arial, sans-serif;
-            padding: 0 20px;
-            z-index: 1;
-            position: relative;
+        @keyframes scanline {
+            0% {
+                transform: translateX(-100%);
+            }
+            100% {
+                transform: translateX(100%);
+            }
         }
 
         .navbar a {
-            float: left;
-            display: block;
-            color: white;
-            text-align: center;
-            padding: 16px 20px;
+            color: var(--text-color);
             text-decoration: none;
-            font-weight: bold;
+            padding: 0.8rem 1.5rem;
+            margin: 0 0.5rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            position: relative;
+            overflow: hidden;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            letter-spacing: 1px;
+            min-width: 110px;
+            text-align: center;
+        }
+
+        .navbar a::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                var(--accent-color),
+                transparent
+            );
+            transition: 0.5s;
+        }
+
+        .navbar a:hover::before {
+            left: 100%;
         }
 
         .navbar a:hover {
-            background-color: #ddd;
-            color: black;
+            background: var(--accent-color);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 0 20px rgba(13, 148, 136, 0.3);
+            border-color: var(--primary-color);
         }
 
-        /* Card Container */
+        .navbar a:active {
+            transform: translateY(0);
+        }
+
         .card {
-            background: rgba(255, 255, 255, 0.1);
+            background: var(--card-bg);
             backdrop-filter: blur(10px);
-            border-radius: 10px;
-            padding: 30px;
-            margin: 50px auto;
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 2.5rem;
+            margin: 8rem auto 2rem;
             width: 90%;
             max-width: 600px;
             text-align: center;
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-            z-index: 1;
-            position: relative;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
         }
 
         .card h1 {
-            font-size: 28px;
-            margin-bottom: 20px;
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-color);
+            font-weight: 600;
         }
 
-        .card input[type="number"],
-        .card input[type="text"] {
-            width: 80%;
-            padding: 12px;
-            margin: 10px auto;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 16px;
+        input[type="number"],
+        input[type="text"] {
+            width: 100%;
+            padding: 1rem;
+            margin: 1rem 0;
+            border: 2px solid var(--card-border);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-color);
+            font-size: 1rem;
+            transition: all 0.3s ease;
         }
 
-        .card button,
-        input[type=submit] {
-            background-color: #4CAF50;
+        input[type="number"]:focus,
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+        }
+
+        button {
+            background: var(--primary-color);
             color: white;
-            padding: 12px 24px;
+            padding: 1rem 2rem;
             border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            font-weight: bold;
-            margin: 10px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 500;
+            margin: 1rem 0.5rem;
             cursor: pointer;
-            transition: background-color 0.3s ease;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        .card button:hover,
-        input[type=submit]:hover {
-            background-color: #3e8e41;
+        button:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
 
-        /* Typography */
+        button:active {
+            transform: translateY(0);
+        }
+
+        hr {
+            border: none;
+            height: 1px;
+            background: var(--card-border);
+            margin: 2rem 0;
+        }
+
         p, span {
-            font-size: 18px;
-            margin: 10px 0;
+            font-size: 1.1rem;
+            margin: 1rem 0;
+            color: var(--text-color);
         }
 
         #myTable {
-            border-collapse: collapse;
             width: 100%;
-            margin-top: 30px;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 2rem;
+            border-radius: 12px;
+            overflow: hidden;
         }
 
         #myTable th,
         #myTable td {
-            border: 1px solid white;
-            padding: 10px;
+            padding: 1rem;
             text-align: center;
-            color: wheat;
+            border: 1px solid var(--card-border);
         }
 
         #myTable th {
-            background-color: rgba(255, 255, 255, 0.2);
+            background: rgba(59, 130, 246, 0.2);
+            font-weight: 600;
+        }
+
+        #myTable tr:nth-child(even) {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        #myTable tr:hover {
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .theme-toggle {
+            background: transparent;
+            border: 1px solid var(--card-border);
+            color: var(--text-color);
+            padding: 0.5rem;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-duration) ease;
+            margin-left: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .theme-toggle::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--accent-color);
+            opacity: 0;
+            transition: opacity var(--transition-duration) ease;
+            z-index: 0;
+        }
+
+        .theme-toggle:hover::before {
+            opacity: 0.1;
+        }
+
+        .theme-toggle svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+            position: relative;
+            z-index: 1;
+            transition: transform 0.5s ease;
+        }
+
+        .theme-toggle:hover svg {
+            transform: rotate(180deg);
+        }
+
+        .theme-transitioning * {
+            transition: none !important;
         }
     </style>
+    <script>
+        function toggleTheme() {
+            const body = document.body;
+            const currentTheme = body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            
+            // Add transition class
+            body.classList.add('theme-transitioning');
+            
+            // Change theme
+            body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            // Remove transition class after animation
+            setTimeout(() => {
+                body.classList.remove('theme-transitioning');
+            }, 300);
+        }
+
+        // Initialize theme from localStorage
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.body.setAttribute('data-theme', savedTheme);
+        });
+    </script>
 </head>
 <body>
-
     <div class="navbar">
         <a href="/vote.html">Vote</a>
         <a href="/ListVoters.html">List Voters</a>
+        <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z"/>
+            </svg>
+        </button>
     </div>
 
     <div class="card">
@@ -149,7 +357,7 @@
         <button onclick="connectMetamask()">Connect Metamask</button>
         <p id="metamasknotification"></p>
 
-        <hr style="margin: 30px 0; border: 1px solid rgba(255, 255, 255, 0.3);">
+        <hr>
 
         <span>Vote</span>
         <input type="number" id="vote" placeholder="Enter candidate index...">
@@ -160,6 +368,5 @@
         <p id="status"></p>
         <p id="time"></p>
     </div>
-
 </body>
 </html>

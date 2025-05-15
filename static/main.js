@@ -220,16 +220,46 @@ const voteStatus = async () => {
         const signer = provider.getSigner();
         const contract = new ethers.Contract(contractAddress, contractAbi, signer);
 
-        const isOpen = await contract.getVotingStatus();
+        // Check if we're connected to the right network
+        const network = await provider.getNetwork();
+        if (network.chainId !== 11155111) { // Sepolia testnet chainId
+            document.getElementById("status").innerText = "Please connect to Sepolia testnet";
+            return;
+        }
+
+        // Try to get voting status with a timeout
+        const statusPromise = contract.getVotingStatus();
+        const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Request timeout')), 10000)
+        );
+
+        const isOpen = await Promise.race([statusPromise, timeoutPromise]);
+        
+        // Get remaining time
         const remainingTime = await contract.getRemainingTime();
+        const minutes = Math.floor(remainingTime / 60);
+        const seconds = remainingTime % 60;
 
         document.getElementById("status").innerText = 
             isOpen ? "Voting is currently open" : "Voting is finished";
         document.getElementById("time").innerText = 
-            `Remaining time: ${remainingTime.toString()} seconds`;
+            `Remaining time: ${minutes} minutes and ${seconds} seconds`;
     } catch (err) {
         console.error("Error fetching status:", err);
-        document.getElementById("status").innerText = "Error checking voting status.";
+        let errorMessage = "Error checking voting status. ";
+        
+        if (err.code === 'CALL_EXCEPTION') {
+            errorMessage += "The contract call failed. Please make sure you're connected to the correct network and the contract is deployed.";
+        } else if (err.code === 'NETWORK_ERROR') {
+            errorMessage += "Network error. Please check your internet connection.";
+        } else if (err.message === 'Request timeout') {
+            errorMessage += "Request timed out. Please try again.";
+        } else {
+            errorMessage += err.message || "Unknown error occurred.";
+        }
+        
+        document.getElementById("status").innerText = errorMessage;
+        document.getElementById("time").innerText = "";
     }
 };
 
@@ -247,21 +277,81 @@ const getAllCandidates = async () => {
 
         document.getElementById("p3").innerText = "Fetching candidates...";
 
+        // Check if we're connected to the right network
+        const network = await provider.getNetwork();
+        if (network.chainId !== 11155111) { // Sepolia testnet chainId
+            document.getElementById("p3").innerText = "Please connect to Sepolia testnet";
+            return;
+        }
+
+        // Get the candidates array first
         const candidates = await contract.getAllVotesOfCandiates();
+        
+        if (!candidates || candidates.length === 0) {
+            document.getElementById("p3").innerText = "No candidates found";
+            return;
+        }
+
+        // Get voting status for information only
+        let votingStatus = "Voting in progress";
+        try {
+            const isVotingActive = await contract.getVotingStatus();
+            votingStatus = isVotingActive ? "Voting in progress" : "Voting period has ended";
+        } catch (statusErr) {
+            console.warn("Could not fetch voting status:", statusErr);
+            votingStatus = "Voting status unknown";
+        }
 
         const table = document.getElementById("myTable");
-        table.innerHTML = ""; // Clear previous rows
+        const tbody = table.querySelector("tbody");
+        tbody.innerHTML = ""; // Clear previous rows
 
+        // Create header if it doesn't exist
+        if (!table.querySelector("thead")) {
+            const thead = document.createElement("thead");
+            const headerRow = document.createElement("tr");
+            ["Index", "Candidate name", "Candidate votes"].forEach(text => {
+                const th = document.createElement("th");
+                th.textContent = text;
+                headerRow.appendChild(th);
+            });
+            thead.appendChild(headerRow);
+            table.insertBefore(thead, tbody);
+        }
+
+        // Add candidates to table
         candidates.forEach((candidate, index) => {
-            const row = table.insertRow();
-            row.insertCell().innerText = index;
-            row.insertCell().innerText = candidate.name;
-            row.insertCell().innerText = candidate.voteCount.toString();
+            const row = document.createElement("tr");
+            
+            const indexCell = document.createElement("td");
+            indexCell.textContent = index;
+            row.appendChild(indexCell);
+
+            const nameCell = document.createElement("td");
+            nameCell.textContent = candidate.name;
+            row.appendChild(nameCell);
+
+            const votesCell = document.createElement("td");
+            votesCell.textContent = candidate.voteCount.toString();
+            row.appendChild(votesCell);
+
+            tbody.appendChild(row);
         });
 
-        document.getElementById("p3").innerText = "Candidates updated.";
+        // Update status message with voting status
+        document.getElementById("p3").innerText = `${votingStatus} - Showing current results`;
     } catch (err) {
         console.error("Error fetching candidates:", err);
-        document.getElementById("p3").innerText = "Error loading candidates.";
+        let errorMessage = "Error loading candidates. ";
+        
+        if (err.code === 'CALL_EXCEPTION') {
+            errorMessage += "The contract call failed. Please make sure you're connected to the correct network and the contract is deployed.";
+        } else if (err.code === 'NETWORK_ERROR') {
+            errorMessage += "Network error. Please check your internet connection.";
+        } else {
+            errorMessage += err.message || "Unknown error occurred.";
+        }
+        
+        document.getElementById("p3").innerText = errorMessage;
     }
 };
