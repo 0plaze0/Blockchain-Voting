@@ -1,5 +1,5 @@
 let WALLET_CONNECTED = "";
-const contractAddress = "0x44ac68EAD47BDC4706A01481009234e89fD680eD";
+const contractAddress = "0x091994Dc3585dC4c8d388a10A22EfD2243F11Fe0";
 
 // The ABI remains unchanged (paste it fully as you had it)
 const contractAbi = [
