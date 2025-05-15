@@ -29,7 +29,7 @@ if (!API_URL || !PRIVATE_KEY || !CONTRACT_ADDRESS) {
 }
 
 // Load contract ABI
-const artifactPath = path.join(__dirname, 'artifacts', 'contracts', 'Voting.sol', 'Voting.json');
+const artifactPath = path.join(__dirname, "ignition/deployments/chain-11155111/artifacts/VotingModule#Voting.json");
 const artifact = JSON.parse(await readFile(artifactPath, 'utf8'));
 const abi = artifact.abi;
 
